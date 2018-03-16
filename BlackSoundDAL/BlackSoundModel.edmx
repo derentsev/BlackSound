@@ -1,0 +1,292 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="BlackSoundModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="artistTable">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" Nullable="false" />
+          <Property Name="Country" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Name" Type="varchar" MaxLength="50" Nullable="false" />
+        </EntityType>
+        <EntityType Name="playlist_song">
+          <Key>
+            <PropertyRef Name="playlistID" />
+            <PropertyRef Name="songID" />
+          </Key>
+          <Property Name="playlistID" Type="int" Nullable="false" />
+          <Property Name="songID" Type="int" Nullable="false" />
+        </EntityType>
+        <EntityType Name="playlistTable">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="isPublic" Type="bit" Nullable="false" />
+          <Property Name="userID" Type="int" />
+        </EntityType>
+        <EntityType Name="songTable">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ArtistID" Type="int" Nullable="false" />
+          <Property Name="Year" Type="int" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" Nullable="false" />
+        </EntityType>
+        <EntityType Name="userTable">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Email" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Password" Type="nvarchar" MaxLength="25" Nullable="false" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="isAdmin" Type="bit" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_Playlist">
+          <End Role="playlistTable" Type="Self.playlistTable" Multiplicity="1" />
+          <End Role="playlist_song" Type="Self.playlist_song" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="playlistTable">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="playlist_song">
+              <PropertyRef Name="playlistID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_playlist_song_songTable">
+          <End Role="songTable" Type="Self.songTable" Multiplicity="1" />
+          <End Role="playlist_song" Type="Self.playlist_song" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="songTable">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="playlist_song">
+              <PropertyRef Name="songID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_playlistTable_userTable">
+          <End Role="userTable" Type="Self.userTable" Multiplicity="0..1" />
+          <End Role="playlistTable" Type="Self.playlistTable" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="userTable">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="playlistTable">
+              <PropertyRef Name="userID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_songTable_artistTable">
+          <End Role="artistTable" Type="Self.artistTable" Multiplicity="1" />
+          <End Role="songTable" Type="Self.songTable" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="artistTable">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="songTable">
+              <PropertyRef Name="ArtistID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="BlackSoundModelStoreContainer">
+          <EntitySet Name="artistTable" EntityType="Self.artistTable" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="playlist_song" EntityType="Self.playlist_song" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="playlistTable" EntityType="Self.playlistTable" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="songTable" EntityType="Self.songTable" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="userTable" EntityType="Self.userTable" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_Playlist" Association="Self.FK_Playlist">
+            <End Role="playlistTable" EntitySet="playlistTable" />
+            <End Role="playlist_song" EntitySet="playlist_song" />
+          </AssociationSet>
+          <AssociationSet Name="FK_playlist_song_songTable" Association="Self.FK_playlist_song_songTable">
+            <End Role="songTable" EntitySet="songTable" />
+            <End Role="playlist_song" EntitySet="playlist_song" />
+          </AssociationSet>
+          <AssociationSet Name="FK_playlistTable_userTable" Association="Self.FK_playlistTable_userTable">
+            <End Role="userTable" EntitySet="userTable" />
+            <End Role="playlistTable" EntitySet="playlistTable" />
+          </AssociationSet>
+          <AssociationSet Name="FK_songTable_artistTable" Association="Self.FK_songTable_artistTable">
+            <End Role="artistTable" EntitySet="artistTable" />
+            <End Role="songTable" EntitySet="songTable" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="BlackSoundModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="artistTable">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" />
+          <Property Name="Country" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <NavigationProperty Name="songTable" Relationship="Self.FK_songTable_artistTable" FromRole="artistTable" ToRole="songTable" />
+        </EntityType>
+        <EntityType Name="playlistTable">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="isPublic" Type="Boolean" Nullable="false" />
+          <Property Name="userID" Type="Int32" />
+          <NavigationProperty Name="userTable" Relationship="Self.FK_playlistTable_userTable" FromRole="playlistTable" ToRole="userTable" />
+          <NavigationProperty Name="songTable" Relationship="Self.playlist_song" FromRole="playlistTable" ToRole="songTable" />
+        </EntityType>
+        <EntityType Name="songTable">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="ArtistID" Type="Int32" Nullable="false" />
+          <Property Name="Year" Type="Int32" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <NavigationProperty Name="artistTable" Relationship="Self.FK_songTable_artistTable" FromRole="songTable" ToRole="artistTable" />
+          <NavigationProperty Name="playlistTable" Relationship="Self.playlist_song" FromRole="songTable" ToRole="playlistTable" />
+        </EntityType>
+        <EntityType Name="userTable">
+          <Key>
+            <PropertyRef Name="ID" />
+          </Key>
+          <Property Name="ID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Email" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Password" Type="String" MaxLength="25" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="isAdmin" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="playlistTable" Relationship="Self.FK_playlistTable_userTable" FromRole="userTable" ToRole="playlistTable" />
+        </EntityType>
+        <Association Name="FK_songTable_artistTable">
+          <End Role="artistTable" Type="Self.artistTable" Multiplicity="1" />
+          <End Role="songTable" Type="Self.songTable" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="artistTable">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="songTable">
+              <PropertyRef Name="ArtistID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_playlistTable_userTable">
+          <End Role="userTable" Type="Self.userTable" Multiplicity="0..1" />
+          <End Role="playlistTable" Type="Self.playlistTable" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="userTable">
+              <PropertyRef Name="ID" />
+            </Principal>
+            <Dependent Role="playlistTable">
+              <PropertyRef Name="userID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="playlist_song">
+          <End Role="playlistTable" Type="Self.playlistTable" Multiplicity="*" />
+          <End Role="songTable" Type="Self.songTable" Multiplicity="*" />
+        </Association>
+        <EntityContainer Name="BlackSoundEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="artistTable" EntityType="Self.artistTable" />
+          <EntitySet Name="playlistTable" EntityType="Self.playlistTable" />
+          <EntitySet Name="songTable" EntityType="Self.songTable" />
+          <EntitySet Name="userTable" EntityType="Self.userTable" />
+          <AssociationSet Name="FK_songTable_artistTable" Association="Self.FK_songTable_artistTable">
+            <End Role="artistTable" EntitySet="artistTable" />
+            <End Role="songTable" EntitySet="songTable" />
+          </AssociationSet>
+          <AssociationSet Name="FK_playlistTable_userTable" Association="Self.FK_playlistTable_userTable">
+            <End Role="userTable" EntitySet="userTable" />
+            <End Role="playlistTable" EntitySet="playlistTable" />
+          </AssociationSet>
+          <AssociationSet Name="playlist_song" Association="Self.playlist_song">
+            <End Role="playlistTable" EntitySet="playlistTable" />
+            <End Role="songTable" EntitySet="songTable" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="BlackSoundModelStoreContainer" CdmEntityContainer="BlackSoundEntities">
+          <EntitySetMapping Name="artistTable">
+            <EntityTypeMapping TypeName="BlackSoundModel.artistTable">
+              <MappingFragment StoreEntitySet="artistTable">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="playlistTable">
+            <EntityTypeMapping TypeName="BlackSoundModel.playlistTable">
+              <MappingFragment StoreEntitySet="playlistTable">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="isPublic" ColumnName="isPublic" />
+                <ScalarProperty Name="userID" ColumnName="userID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="songTable">
+            <EntityTypeMapping TypeName="BlackSoundModel.songTable">
+              <MappingFragment StoreEntitySet="songTable">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="ArtistID" ColumnName="ArtistID" />
+                <ScalarProperty Name="Year" ColumnName="Year" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="userTable">
+            <EntityTypeMapping TypeName="BlackSoundModel.userTable">
+              <MappingFragment StoreEntitySet="userTable">
+                <ScalarProperty Name="ID" ColumnName="ID" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="isAdmin" ColumnName="isAdmin" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <AssociationSetMapping Name="playlist_song" TypeName="BlackSoundModel.playlist_song" StoreEntitySet="playlist_song">
+            <EndProperty Name="playlistTable">
+              <ScalarProperty Name="ID" ColumnName="playlistID" />
+            </EndProperty>
+            <EndProperty Name="songTable">
+              <ScalarProperty Name="ID" ColumnName="songID" />
+            </EndProperty>
+          </AssociationSetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="false" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
