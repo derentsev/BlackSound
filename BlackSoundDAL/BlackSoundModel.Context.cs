@@ -28,6 +28,6 @@ namespace BlackSoundDAL
         public virtual DbSet<artistTable> artistTable { get; set; }
         public virtual DbSet<playlistTable> playlistTable { get; set; }
         public virtual DbSet<songTable> songTable { get; set; }
-        public virtual DbSet<userTable> userTable { get; set; }
+        public virtual DbSet<Entities.User> userTable { get; set; }
     }
 }

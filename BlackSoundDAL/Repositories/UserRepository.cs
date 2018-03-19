@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Data;
+using BlackSoundDAL.Entities;
 
 namespace BlackSoundDAL
 {
@@ -17,9 +18,9 @@ namespace BlackSoundDAL
             this.connectionString = connectionString;
         }
 
-        public List<userTable> GetAll()
+        public List<User> GetAll()
         {
-            List<userTable> resultSet = new List<userTable>();
+            List<User> resultSet = new List<User>();
             IDbConnection connection = new SqlConnection(connectionString);
 
             try
@@ -33,13 +34,12 @@ namespace BlackSoundDAL
                 {
                     while (reader.Read())
                     {
-                        //Fill isAdmin and pass
-                        //Finish GetByID
-                        resultSet.Add(new userTable()
+                        resultSet.Add(new User()
                         {
                             ID = (int)reader["ID"],
                             Name = (string)reader["Name"],
-                            Email = (string)reader["Email"]
+                            Email = (string)reader["Email"],
+                            IsAdmin = (bool)reader["isAdmin"]
                         });
                     }
                 }
@@ -92,7 +92,7 @@ namespace BlackSoundDAL
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO Contacts (Name, Email, Password, isAdmin)VALUES (@Name, @Email, @Password, @isAdmin)";
+            command.CommandText = "INSERT INTO userTable (Name, Email, Password, isAdmin)VALUES (@Name, @Email, @Password, @isAdmin)";
 
             IDataParameter parameter = command.CreateParameter();
             parameter = command.CreateParameter();
@@ -135,7 +135,7 @@ namespace BlackSoundDAL
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "UPDATE Contacts SET Name=@Name,Email=@Email, Password = @Password, isAdmin = @isAdmin WHERE ID=@ID";
+            command.CommandText = "UPDATE userTable SET Name=@Name,Email=@Email, Password = @Password, isAdmin = @isAdmin WHERE ID=@ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter.ParameterName = "@ID";
@@ -181,7 +181,7 @@ namespace BlackSoundDAL
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText ="DELETE FROM Contacts WHERE ID=@ID";
+            command.CommandText ="DELETE FROM userTable WHERE ID=@ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter.ParameterName = "@ID";
@@ -202,5 +202,3 @@ namespace BlackSoundDAL
     }
 }
 
-    }
-}

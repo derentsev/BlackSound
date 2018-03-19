@@ -25,7 +25,7 @@ namespace BlackSoundDAL
         public bool isPublic { get; set; }
         public Nullable<int> userID { get; set; }
     
-        public virtual userTable userTable { get; set; }
+        public virtual Entities.User userTable { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<songTable> songTable { get; set; }
     }
