@@ -54,9 +54,10 @@ namespace BlackSoundDAL.Repositories
             return resultSet;
         }
 
-        public List<Playlist> GetByID(Playlist song)
+        //id fix
+        public Playlist GetByID(int ID)
         {
-            List<Playlist> resultSet = new List<Playlist>();
+            Playlist playlist = new Playlist();
             IDbConnection connection = new SqlConnection(connectionString);
 
             try
@@ -70,12 +71,44 @@ namespace BlackSoundDAL.Repositories
                 {
                     while (reader.Read())
                     {
-                        resultSet.Add(new Playlist()
+
+                        playlist.ID = (int)reader["ID"];
+                        playlist.Name = (string)reader["Name"];
+                        playlist.isPublic = (bool)reader["isPublic"];
+                        playlist.userID = (int)reader["userID"];
+                    }
+                }
+            }
+
+            finally
+            {
+                connection.Close();
+            }
+
+            return playlist;
+        }
+
+        //Finish Select from 
+        public List<Song> GetPlaylistInfo(int playlistID)
+        {
+            List<Song> resultset = new List<Song>();
+            IDbConnection connection = new SqlConnection(connectionString);
+
+            try
+            {
+                connection.Open();
+                IDbCommand command = connection.CreateCommand();
+                command.CommandText = "SELECT song.Name, song.ID FROM playlist_song ps JOIN songsTable song ON (ps.songID = song.ID) WHERE ps.playlistID = 1";
+
+                IDataReader reader = command.ExecuteReader();
+                using (reader)
+                {
+                    while (reader.Read())
+                    {
+                        resultset.Add(new Song
                         {
                             ID = (int)reader["ID"],
-                            Name = (string)reader["Name"],
-                            isPublic = (bool)reader["isPublic"],
-                            userID = (int)reader["userID"]
+                            Name = (string)reader["Name"]
                         });
                     }
                 }
@@ -86,8 +119,9 @@ namespace BlackSoundDAL.Repositories
                 connection.Close();
             }
 
-            return resultSet;
+            return resultset;
         }
+
 
         public void Insert(Playlist playlist)
         {

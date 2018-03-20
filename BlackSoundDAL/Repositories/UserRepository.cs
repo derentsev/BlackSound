@@ -53,7 +53,7 @@ namespace BlackSoundDAL
             return resultSet;
         }
 
-        public List<userTable> GetByID(userTable user)
+        public List<userTable> GetByID(int ID)
         {
             List<userTable> resultSet = new List<userTable>();
             IDbConnection connection = new SqlConnection(connectionString);

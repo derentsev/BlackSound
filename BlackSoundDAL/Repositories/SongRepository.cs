@@ -53,7 +53,7 @@ namespace BlackSoundDAL.Repositories
             return resultSet;
         }
 
-        public List<Song> GetByID(Song song)
+        public List<Song> GetByID(int ID)
         {
             List<Song> resultSet = new List<Song>();
             IDbConnection connection = new SqlConnection(connectionString);
@@ -163,16 +163,15 @@ namespace BlackSoundDAL.Repositories
             }
         }
 
-        public void Delete(Song song)
+        public void Delete(int ID)
         {
             IDbConnection connection = new SqlConnection(connectionString);
-
             IDbCommand command = connection.CreateCommand();
             command.CommandText = "DELETE FROM Contacts WHERE ID=@ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter.ParameterName = "@ID";
-            parameter.Value = song.ID;
+            parameter.Value = ID;
             command.Parameters.Add(parameter);
 
             try
