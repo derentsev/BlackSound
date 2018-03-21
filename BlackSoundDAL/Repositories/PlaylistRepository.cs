@@ -53,8 +53,7 @@ namespace BlackSoundDAL.Repositories
 
             return resultSet;
         }
-
-        //id fix
+        
         public Playlist GetByID(int ID)
         {
             Playlist playlist = new Playlist();
@@ -87,9 +86,8 @@ namespace BlackSoundDAL.Repositories
 
             return playlist;
         }
-
-        //Finish Select from 
-        public List<Song> GetPlaylistInfo(int playlistID)
+        
+        public List<Song> GetSongsInPlaylist(int playlistID)
         {
             List<Song> resultset = new List<Song>();
             IDbConnection connection = new SqlConnection(connectionString);
@@ -121,7 +119,6 @@ namespace BlackSoundDAL.Repositories
 
             return resultset;
         }
-
 
         public void Insert(Playlist playlist)
         {
