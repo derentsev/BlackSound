@@ -42,11 +42,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DisplaySong.cs" />
+    <Compile Include="DisplayUser.cs" />
+    <Compile Include="CreateDatabase.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BlackSoundDAL\BlackSoundDAL.csproj">
+      <Project>{39cddb87-1172-4879-897d-5bc7f22f6a95}</Project>
+      <Name>BlackSoundDAL</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

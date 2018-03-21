@@ -27,7 +27,7 @@ namespace BlackSoundDAL
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM userTable";
+                command.CommandText = "SELECT * FROM usersTable";
 
                 IDataReader reader = command.ExecuteReader();
                 using (reader)
@@ -53,28 +53,32 @@ namespace BlackSoundDAL
             return resultSet;
         }
 
-        public List<userTable> GetByID(int ID)
+        public User GetByID(int ID)
         {
-            List<userTable> resultSet = new List<userTable>();
+            User userResult = new User();
             IDbConnection connection = new SqlConnection(connectionString);
 
             try
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT  FROM userTable WHERE ID = @ID";
+                command.CommandText = "SELECT * FROM usersTable WHERE ID = @ID";
+
+                IDataParameter parameter = command.CreateParameter();
+                parameter.ParameterName = "@ID";
+                parameter.Value = ID;
+                command.Parameters.Add(parameter);
+
 
                 IDataReader reader = command.ExecuteReader();
                 using (reader)
                 {
                     while (reader.Read())
                     {
-                        resultSet.Add(new userTable()
-                        {
-                            ID = (int)reader["ID"],
-                            Name = (string)reader["Name"],
-                            Email = (string)reader["Email"]
-                        });
+
+                        userResult.ID = (int)reader["ID"];
+                        userResult.Name = (string)reader["Name"];
+                        userResult.Email = (string)reader["Email"];
                     }
                 }
             }
@@ -84,7 +88,7 @@ namespace BlackSoundDAL
                 connection.Close();
             }
 
-            return resultSet;
+            return userResult;
         }
 
         public void Insert(userTable user)
@@ -92,7 +96,7 @@ namespace BlackSoundDAL
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO userTable (Name, Email, Password, isAdmin)VALUES (@Name, @Email, @Password, @isAdmin)";
+            command.CommandText = "INSERT INTO usersTable (Name, Email, Password, isAdmin)VALUES (@Name, @Email, @Password, @isAdmin)";
 
             IDataParameter parameter = command.CreateParameter();
             parameter = command.CreateParameter();
@@ -126,16 +130,13 @@ namespace BlackSoundDAL
                 connection.Close();
             }
         }
-
-
-
 
         public void Update(userTable user)
         {
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "UPDATE userTable SET Name=@Name,Email=@Email, Password = @Password, isAdmin = @isAdmin WHERE ID=@ID";
+            command.CommandText = "UPDATE usersTable SET Name=@Name,Email=@Email, Password = @Password, isAdmin = @isAdmin WHERE ID=@ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter.ParameterName = "@ID";
@@ -176,16 +177,16 @@ namespace BlackSoundDAL
             }
         }
 
-        public void Delete(userTable  user)
+        public void Delete(int ID)
         {
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText ="DELETE FROM userTable WHERE ID=@ID";
+            command.CommandText = "DELETE FROM usersTable WHERE ID=@ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter.ParameterName = "@ID";
-            parameter.Value = user.ID;
+            parameter.Value = ID;
             command.Parameters.Add(parameter);
 
             try
@@ -198,6 +199,30 @@ namespace BlackSoundDAL
             {
                 connection.Close();
             }
+        }
+
+        public bool LogIn(string userName, string password)
+        {
+            bool logged;
+            SqlConnection connection = new SqlConnection(connectionString);
+            connection.Open();
+
+            using (SqlCommand StrQuer = new SqlCommand("SELECT * FROM usersTable WHERE Name=@Name AND Password = @Password", connection))
+            {
+                StrQuer.Parameters.AddWithValue("@Name", userName);
+                StrQuer.Parameters.AddWithValue("@Password", password);
+                SqlDataReader dr = StrQuer.ExecuteReader();
+                if (dr.HasRows)
+                {
+                    logged = true;
+                }
+                else
+                {
+                    logged = false;
+                }
+            }
+
+            return logged;
         }
     }
 }

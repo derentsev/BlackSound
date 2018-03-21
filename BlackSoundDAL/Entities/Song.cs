@@ -9,7 +9,7 @@ namespace BlackSoundDAL.Entities
     public class Song
     {
         public int ID { get; set; }
-        public int ArtistID { get; set; }
+        public string ArtistName { get; set; }
         public int Year { get; set; }
         public string Name { get; set; }
     }

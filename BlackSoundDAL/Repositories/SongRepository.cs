@@ -9,7 +9,7 @@ using BlackSoundDAL.Entities;
 
 namespace BlackSoundDAL.Repositories
 {
-    class SongRepository
+    public class SongRepository
     {
         private readonly string connectionString;
 
@@ -27,7 +27,7 @@ namespace BlackSoundDAL.Repositories
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM songTable";
+                command.CommandText = "SELECT * FROM songsTable";
 
                 IDataReader reader = command.ExecuteReader();
                 using (reader)
@@ -38,7 +38,8 @@ namespace BlackSoundDAL.Repositories
                         {
                             ID = (int)reader["ID"],
                             Name = (string)reader["Name"],
-                            Year = (int)reader["Year"]
+                            Year = (int)reader["Year"],
+                            ArtistName = (string)reader["ArtistName"]
                         });
 
                     }
@@ -53,29 +54,27 @@ namespace BlackSoundDAL.Repositories
             return resultSet;
         }
 
-        public List<Song> GetByID(int ID)
+        public Song GetByID(int ID)
         {
-            List<Song> resultSet = new List<Song>();
+            Song songResult = new Song();
             IDbConnection connection = new SqlConnection(connectionString);
 
             try
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM songTable WHERE ID = @ID";
+                command.CommandText = "SELECT * FROM songsTable WHERE ID = @ID";
 
                 IDataReader reader = command.ExecuteReader();
                 using (reader)
                 {
                     while (reader.Read())
                     {
-                        resultSet.Add(new Song()
-                        {
-                            ID = (int)reader["ID"],
-                            Name = (string)reader["Name"],
-                            ArtistID = (int)reader["ArtistID"],
-                            Year = (int)reader["Year"]
-                        });
+
+                        songResult.ID = (int)reader["ID"];
+                        songResult.Name = (string)reader["Name"];
+                        songResult.ArtistName = (string)reader["ArtistName"];
+                        songResult.Year = (int)reader["Year"];
                     }
                 }
             }
@@ -85,7 +84,7 @@ namespace BlackSoundDAL.Repositories
                 connection.Close();
             }
 
-            return resultSet;
+            return songResult;
         }
 
         public void Insert(Song song)
@@ -93,7 +92,7 @@ namespace BlackSoundDAL.Repositories
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO songTable (Name, Email, Password, isAdmin)VALUES (@Name, @Email, @Password, @isAdmin)";
+            command.CommandText = "INSERT INTO songsTable (Name, ArtistName, YearCreated) VALUES (@Name, @ArtistName, @YearCreated)";
 
             IDataParameter parameter = command.CreateParameter();
             parameter = command.CreateParameter();
@@ -102,13 +101,13 @@ namespace BlackSoundDAL.Repositories
             command.Parameters.Add(parameter);
 
             parameter = command.CreateParameter();
-            parameter.ParameterName = "@Year";
-            parameter.Value = song.Year;
+            parameter.ParameterName = "@ArtistName";
+            parameter.Value = song.ArtistName;
             command.Parameters.Add(parameter);
 
             parameter = command.CreateParameter();
-            parameter.ParameterName = "@ArtistID";
-            parameter.Value = song.ArtistID;
+            parameter.ParameterName = "@YearCreated";
+            parameter.Value = song.Year;
             command.Parameters.Add(parameter);
 
             try
@@ -128,7 +127,7 @@ namespace BlackSoundDAL.Repositories
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "UPDATE songTable SET Name = @Name, ArtistID = @ArtistID, Year = @Year WHERE ID = @ID";
+            command.CommandText = "UPDATE songsTable SET Name = @Name, ArtistName = @ArtistName, YearCreated = @YearCreated WHERE ID = @ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter = command.CreateParameter();
@@ -142,13 +141,13 @@ namespace BlackSoundDAL.Repositories
             command.Parameters.Add(parameter);
 
             parameter = command.CreateParameter();
-            parameter.ParameterName = "@Year";
+            parameter.ParameterName = "@YearCreated";
             parameter.Value = song.Year;
             command.Parameters.Add(parameter);
 
             parameter = command.CreateParameter();
-            parameter.ParameterName = "@ArtistID";
-            parameter.Value = song.ArtistID;
+            parameter.ParameterName = "@ArtistName";
+            parameter.Value = song.ArtistName;
             command.Parameters.Add(parameter);
 
             try
@@ -167,7 +166,7 @@ namespace BlackSoundDAL.Repositories
         {
             IDbConnection connection = new SqlConnection(connectionString);
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "DELETE FROM Contacts WHERE ID=@ID";
+            command.CommandText = "DELETE FROM songsTable WHERE ID=@ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter.ParameterName = "@ID";

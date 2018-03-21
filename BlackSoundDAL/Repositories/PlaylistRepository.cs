@@ -9,7 +9,7 @@ using BlackSoundDAL.Entities;
 
 namespace BlackSoundDAL.Repositories
 {
-    class PlaylistRepository
+    public class PlaylistRepository
     {
         private readonly string connectionString;
 
@@ -27,7 +27,7 @@ namespace BlackSoundDAL.Repositories
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM playlistTable";
+                command.CommandText = "SELECT * FROM playlistsTable";
                 IDataReader reader = command.ExecuteReader();
 
                 using (reader)
@@ -125,7 +125,7 @@ namespace BlackSoundDAL.Repositories
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO playlistTable (Name, isPublic, userID)VALUES (@Name, @isPublic, @userID)";
+            command.CommandText = "INSERT INTO playlistsTable (Name, isPublic, userID) VALUES (@Name, @isPublic, @userID)";
 
             IDataParameter parameter = command.CreateParameter();
             parameter = command.CreateParameter();
@@ -160,7 +160,7 @@ namespace BlackSoundDAL.Repositories
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "UPDATE playlistTable SET Name = @Name, isPublic = @isPublic, userID = @userID WHERE ID = @ID";
+            command.CommandText = "UPDATE playlistsTable SET Name = @Name, isPublic = @isPublic, userID = @userID WHERE ID = @ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter = command.CreateParameter();
@@ -195,16 +195,16 @@ namespace BlackSoundDAL.Repositories
             }
         }
 
-        public void Delete(Playlist playlist)
+        public void Delete(int playlistID)
         {
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "DELETE FROM playlistTable WHERE ID=@ID";
+            command.CommandText = "DELETE FROM playlistsTable WHERE ID=@ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter.ParameterName = "@ID";
-            parameter.Value = playlist.ID;
+            parameter.Value = playlistID;
             command.Parameters.Add(parameter);
 
             try

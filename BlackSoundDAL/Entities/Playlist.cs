@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BlackSoundDAL.Entities
 {
-    class Playlist
+    public class Playlist
     {
         public int ID { get; set; }
         public string Name { get; set; }
