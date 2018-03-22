@@ -38,7 +38,7 @@ namespace BlackSoundDAL.Repositories
                         {
                             ID = (int)reader["ID"],
                             Name = (string)reader["Name"],
-                            Year = (int)reader["Year"],
+                            Year = (int)reader["YearCreated"],
                             ArtistName = (string)reader["ArtistName"]
                         });
 
@@ -65,6 +65,12 @@ namespace BlackSoundDAL.Repositories
                 IDbCommand command = connection.CreateCommand();
                 command.CommandText = "SELECT * FROM songsTable WHERE ID = @ID";
 
+                IDataParameter parameter = command.CreateParameter();
+                parameter = command.CreateParameter();
+                parameter.ParameterName = "@ID";
+                parameter.Value = ID;
+                command.Parameters.Add(parameter);
+
                 IDataReader reader = command.ExecuteReader();
                 using (reader)
                 {
@@ -74,7 +80,7 @@ namespace BlackSoundDAL.Repositories
                         songResult.ID = (int)reader["ID"];
                         songResult.Name = (string)reader["Name"];
                         songResult.ArtistName = (string)reader["ArtistName"];
-                        songResult.Year = (int)reader["Year"];
+                        songResult.Year = (int)reader["YearCreated"];
                     }
                 }
             }
@@ -113,7 +119,6 @@ namespace BlackSoundDAL.Repositories
             try
             {
                 connection.Open();
-
                 command.ExecuteNonQuery();
             }
             finally

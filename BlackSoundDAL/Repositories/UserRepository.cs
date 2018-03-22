@@ -91,7 +91,7 @@ namespace BlackSoundDAL
             return userResult;
         }
 
-        public void Insert(userTable user)
+        public void Insert(User user)
         {
             IDbConnection connection = new SqlConnection(connectionString);
 
@@ -116,7 +116,7 @@ namespace BlackSoundDAL
 
             parameter = command.CreateParameter();
             parameter.ParameterName = "@isAdmin";
-            parameter.Value = user.isAdmin;
+            parameter.Value = user.IsAdmin;
             command.Parameters.Add(parameter);
 
             try
@@ -131,7 +131,7 @@ namespace BlackSoundDAL
             }
         }
 
-        public void Update(userTable user)
+        public void Update(User user)
         {
             IDbConnection connection = new SqlConnection(connectionString);
 
@@ -160,7 +160,7 @@ namespace BlackSoundDAL
 
             parameter = command.CreateParameter();
             parameter.ParameterName = "@isAdmin";
-            parameter.Value = user.isAdmin;
+            parameter.Value = user.IsAdmin;
             command.Parameters.Add(parameter);
 
 
@@ -221,8 +221,78 @@ namespace BlackSoundDAL
                     logged = false;
                 }
             }
-
+            
             return logged;
+        }
+
+        //Checks if the user trying to Log in is admin
+        public bool CheckIfUserAdmin(string name, string password)
+        {
+            IDbConnection connection = new SqlConnection(connectionString);
+            bool isAdmin = false;
+
+            try
+            {
+                connection.Open();
+                IDbCommand command = connection.CreateCommand();
+                command.CommandText = "SELECT isAdmin FROM usersTable WHERE Name = @Name AND Password = @Password";
+
+                IDataParameter parameter = command.CreateParameter();
+                parameter = command.CreateParameter();
+                parameter.ParameterName = "@Name";
+                parameter.Value = name;
+                command.Parameters.Add(parameter);
+
+                parameter = command.CreateParameter();
+                parameter.ParameterName = "@Password";
+                parameter.Value = password;
+                command.Parameters.Add(parameter);
+                IDataReader reader = command.ExecuteReader();
+                isAdmin = (bool)reader["isAdmin"];
+
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            return isAdmin;
+        }
+
+        public bool CheckIfUserExists(string name, string password)
+        {
+            IDbConnection connection = new SqlConnection(connectionString);
+            int rowsAffected = 0;
+
+            try
+            {
+                connection.Open();
+                IDbCommand command = connection.CreateCommand();
+                command.CommandText = "SELECT * FROM usersTable WHERE Name = @Name AND Password = @Password";
+
+                IDataParameter parameter = command.CreateParameter();
+                parameter = command.CreateParameter();
+                parameter.ParameterName = "@Name";
+                parameter.Value = name;
+                command.Parameters.Add(parameter);
+
+                parameter = command.CreateParameter();
+                parameter.ParameterName = "@Password";
+                parameter.Value = password;
+                command.Parameters.Add(parameter);
+                IDataReader reader = command.ExecuteReader();
+                rowsAffected = reader.FieldCount;
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            if (rowsAffected > 0)
+            {
+                return true;
+            }
+            else return false;
         }
     }
 }
