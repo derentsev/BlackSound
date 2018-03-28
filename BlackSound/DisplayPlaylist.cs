@@ -6,23 +6,41 @@ using System.Threading.Tasks;
 using BlackSoundDAL;
 using BlackSoundDAL.Entities;
 using BlackSoundDAL.Repositories;
+using BlackSoundDAL.Services;
 
 namespace BlackSound
 {
+
+    public enum PlaylistOperation : byte
+    {
+        Create = 1,
+        Update = 2,
+        GetSongsFromPlaylist = 3,
+        Delete = 4,
+        ReadByID = 5,
+        AddSongToPlaylist = 6,
+        DeleteSongFromPlaylist = 7,
+        ReadAll = 8,
+        Share = 9,
+        GetMyPlaylists = 10,
+        SharedPlaylisys = 11
+    }
+
     public class DisplayPlaylist
     {
         private static readonly string conString = "Server=.\\SQLEXPRESS; Database=BlackSound; Integrated Security = True";
         PlaylistRepository playlistRepo = new PlaylistRepository(conString);
         Playlist playlistInfo = new Playlist();
         UserRepository user = new UserRepository(conString);
+        DisplayUser dispUser = new DisplayUser();
+        List<Playlist> playlists = new List<Playlist>();
 
         public void AddPlaylist()
         {
             Console.WriteLine("Adding new playlist...");
             Console.Write("Name: ");
             playlistInfo.Name = Console.ReadLine();
-            Console.Write("Creator`s ID: ");
-            playlistInfo.userID = Convert.ToInt32(Console.ReadLine());
+            playlistInfo.userID = AuthenticationService.LoggedUser.ID;
             Console.Write("Playlist is public (true/false): ");
             playlistInfo.isPublic = Convert.ToBoolean(Console.ReadLine());
             playlistRepo.Insert(playlistInfo);
@@ -33,13 +51,21 @@ namespace BlackSound
             Console.WriteLine("Updating playlist...");
             Console.WriteLine("Insert playlists's ID to be updated: ");
             playlistInfo.ID = Convert.ToInt32(Console.ReadLine());
-            Console.Write("New name: ");
-            playlistInfo.Name = Console.ReadLine();
-            Console.Write("Creator`s ID: ");
-            playlistInfo.userID = Convert.ToInt32(Console.ReadLine());
-            Console.Write("Playlist is public true/false");
-            playlistInfo.isPublic = Convert.ToBoolean(Console.ReadLine());
-            playlistRepo.Update(playlistInfo);
+
+            if (playlistRepo.UserOwnsPlaylist(playlistInfo.ID) || AuthenticationService.LoggedUser.ID == 1)
+            {
+                Console.Write("New name: ");
+                playlistInfo.Name = Console.ReadLine();
+                playlistInfo.userID = AuthenticationService.LoggedUser.ID;
+                Console.Write("Playlist is public (true/false): ");
+                playlistInfo.isPublic = Convert.ToBoolean(Console.ReadLine());
+                playlistRepo.Update(playlistInfo);
+            }
+            else
+            {
+                Console.WriteLine("You can not update the playlist, as you are not the creator! " + Environment.NewLine);
+            }
+            
         }
 
         public void AddSongToPlaylist()
@@ -62,7 +88,15 @@ namespace BlackSound
                     Console.WriteLine("Playlist ID: ");
                     int playlistID = Convert.ToInt32(Console.ReadLine());
 
-                    playlistRepo.AddSongToPlaylist(songID, playlistID);
+                    if (playlistRepo.UserOwnsPlaylist(playlistInfo.ID) || AuthenticationService.LoggedUser.ID == 1)
+                    {
+                        playlistRepo.AddSongToPlaylist(songID, playlistID);
+                    }
+                    else
+                    {
+                        Console.WriteLine("You can not add song to the playlist, as you are not the owner! ");
+                    }
+
                     Console.WriteLine(Environment.NewLine + "Input 0 to continue adding songs");
                     Console.WriteLine("Input 1 to go to main menu");
                     Console.WriteLine("Input any other number to exit");
@@ -77,15 +111,36 @@ namespace BlackSound
             }
         }
 
-        public void DeleteSongFromPlaylist()
+        public void DeleteSongFromPlaylist()    
         {
+            GetAllPlaylists();
             Console.WriteLine("Deleting song from playlist..");
             Console.Write("Playlist`s ID: ");
             int playlistID = Convert.ToInt32(Console.ReadLine());
+            //Show songs from the playlist
             Console.Write("Song`s ID: ");
             int songID = Convert.ToInt32(Console.ReadLine());
             playlistRepo.DeleteSongFromPlaylist(songID, playlistID);
             Console.WriteLine("Song removed!" + Environment.NewLine);
+        }
+
+        public void GetPlaylistsByUser()
+        {
+            List<Playlist> allPlaylists = playlistRepo.GetAllByUser(AuthenticationService.LoggedUser.ID);
+            allPlaylists.AddRange(playlistRepo.GetSharedPlaylists(AuthenticationService.LoggedUser.ID));
+            DisplayUser dispUser = new DisplayUser();
+
+            foreach (var item in allPlaylists)
+            {
+                if (item.userID == AuthenticationService.LoggedUser.ID)
+                {
+                    {
+                        Console.WriteLine("Playlist ID:" + item.ID + "      Playlist's name: " + item.Name + Environment.NewLine);
+                    }
+                }
+            }
+
+
         }
 
         public void GetAllPlaylists()
@@ -95,7 +150,12 @@ namespace BlackSound
 
             foreach (var item in allPlaylists)
             {
-                Console.WriteLine("Playlist ID:" + item.ID + "      Playlist's name: " + item.Name + Environment.NewLine);
+                if (playlistInfo.isPublic || playlistInfo.userID == AuthenticationService.LoggedUser.ID || AuthenticationService.LoggedUser.IsAdmin)
+                {
+                    {
+                        Console.WriteLine("Playlist ID:" + item.ID + "      Playlist's name: " + item.Name + Environment.NewLine);
+                    }
+                }
             }
         }
 
@@ -128,54 +188,108 @@ namespace BlackSound
         public void DisplayPlaylistByID()
         {
             Console.Write("Insert playlist`s ID:");
-            int playlistID = Convert.ToInt32(Console.ReadLine());            
-            playlistInfo = playlistRepo.GetByID(playlistID);
-            Console.WriteLine("Playlist's ID: " +  playlistInfo.ID + " Playlist`s Name: " + playlistInfo.Name + Environment.NewLine);            
+            int playlistID = Convert.ToInt32(Console.ReadLine());
+            Tuple<Playlist, string> getvalue = playlistRepo.GetByID(playlistID);
+            playlistInfo = getvalue.Item1;
+            if(playlistInfo.isPublic || playlistInfo.userID == AuthenticationService.LoggedUser.ID || AuthenticationService.LoggedUser.IsAdmin)
+            {
+                Console.WriteLine("Playlist's ID: " + playlistInfo.ID + "," + "  Playlist`s Name: " + playlistInfo.Name + "," + "  Creator`s name: " + getvalue.Item2 + Environment.NewLine);
+            }
+            else
+            {
+                Console.WriteLine("There is no public playlist with that ID." + Environment.NewLine);
+            }
+        }
+
+        public void SharePlaylist()
+        {
+            Console.WriteLine("Sharing playlist..");
+            GetPlaylistsByUser();
+            Console.Write("Insert playlist`s ID: ");
+            int playlistID = Convert.ToInt32(Console.ReadLine());
+            dispUser.DisplayAllUsers();
+            Console.Write("Insert user`s ID: ");
+            int userID = Convert.ToInt32(Console.ReadLine());
+            playlistRepo.Share(userID, playlistID);
+        }
+
+        public void GetAllSharedPlaylistsWithMe()
+        {
+            List<Playlist> sharedPlaylists = playlistRepo.GetSharedPlaylists(AuthenticationService.LoggedUser.ID);
+            DisplayUser dispUser = new DisplayUser();
+            UserRepository userRepo = new UserRepository(conString);
+
+            Console.WriteLine("Users have shared those playlists with you.....");
+            Console.WriteLine("*************************************");
+
+            foreach (var item in sharedPlaylists)
+            {
+                if (item.userID == AuthenticationService.LoggedUser.ID)
+                {
+                    Console.WriteLine("Playlist ID:" + item.ID + Environment.NewLine
+                        + "Playlist's name: " + item.Name + Environment.NewLine
+                        + "Creator: " + userRepo.GetByID((int)item.userID).Name + Environment.NewLine);
+                }
+
+                Console.WriteLine("*************************************");
+            }
         }
 
         public void PrintPlaylistMenu()
         {
             Console.WriteLine(".............PLAYLIST.............");
-            Console.WriteLine("Press 1 to add new playlist");
-            Console.WriteLine("Press 2 to update current playlist");
-            Console.WriteLine("Press 3 to get all playlists");
-            Console.WriteLine("Press 4 to get playlist by ID");
-            Console.WriteLine("Press 5 to delete a playlist");
-            Console.WriteLine("Press 6 to add a song to a playlist");
-            Console.WriteLine("Press 7 to get all songs from a playlist");
-            Console.WriteLine("Press 8 to delete a song from a playlist");
+            Console.WriteLine("1 - Add new playlist");
+            Console.WriteLine("2 - Update playlist");
+            Console.WriteLine("3 - Get all songs in a playlist");
+            Console.WriteLine("4 - Delete playlsit");
+            Console.WriteLine("5 - Get playlist");
+            Console.WriteLine("6 - Add songs to playlist");
+            Console.WriteLine("7 - Delete songs from playlist");
+            Console.WriteLine("8 - Get all playlists");
+            Console.WriteLine("9 - Share a playlist");
+            Console.WriteLine("10 - Get all my playlists");
+            Console.WriteLine("11 - Get all my shared playlists");
             Console.WriteLine("Press any other key to exit");            
             Console.WriteLine("..................................");
 
-            int caseSwitch = Convert.ToInt32(Console.ReadLine());
+            int operationInt = Convert.ToInt32(Console.ReadLine());
+            PlaylistOperation operation = (PlaylistOperation)operationInt;
 
-            switch (caseSwitch)
+            switch (operation)
             {
-                case 1:
+                case PlaylistOperation.Create:
                     AddPlaylist();
                     break;
-                case 2:
+                case PlaylistOperation.Update:
                     UpdatePlaylist();
                     break;
-                case 3:
+                case PlaylistOperation.ReadAll:
                     GetAllPlaylists();
                     break;
-                case 4:
+                case PlaylistOperation.ReadByID:
                     DisplayPlaylistByID();
                     break;
-                case 5:
+                case PlaylistOperation.Delete:
                     DeletePlaylist();
                     break;
-                case 6:
+                case PlaylistOperation.AddSongToPlaylist:
                     AddSongToPlaylist();
                     break;
-                case 7:
+                case PlaylistOperation.GetSongsFromPlaylist:
                     GetSongsFromPlaylist();
                     break;
-                case 8:
+                case PlaylistOperation.DeleteSongFromPlaylist:
                     DeleteSongFromPlaylist();
                     break;
-                    
+                case PlaylistOperation.Share:
+                    SharePlaylist();
+                    break;
+                case PlaylistOperation.GetMyPlaylists:
+                    GetPlaylistsByUser();
+                    break;
+                case PlaylistOperation.SharedPlaylisys:
+                    GetAllSharedPlaylistsWithMe();
+                    break;
                 default:
                     break;
             }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BlackSoundDAL.Entities;
+using BlackSoundDAL.Services;
 
 namespace BlackSoundDAL.Repositories
 {
@@ -27,7 +28,7 @@ namespace BlackSoundDAL.Repositories
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM playlistsTable";
+                command.CommandText = "SELECT * FROM playlistsTable WHERE isPublic = 'TRUE'";
                 IDataReader reader = command.ExecuteReader();
 
                 using (reader)
@@ -52,17 +53,100 @@ namespace BlackSoundDAL.Repositories
 
             return resultSet;
         }
-        
-        public Playlist GetByID(int ID)
+
+        public List<Playlist> GetSharedPlaylists(int userID)
         {
-            Playlist playlist = new Playlist();
+            List<Playlist> resultSet = new List<Playlist>();
             IDbConnection connection = new SqlConnection(connectionString);
 
             try
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM playlistsTable WHERE ID = @ID";
+                command.CommandText = @"SELECT DISTINCT playlistsTable.Name AS Playlist_Name, playlistsTable.userID AS User_ID, user_playlist.playlistID AS Playlist_ID FROM user_playlist 
+                                        INNER JOIN playlistsTable  ON user_playlist.playlistID = playlistID WHERE user_playlist.userID = @userID 
+                                        AND playlistsTable.ID = playlistID";
+
+                IDataParameter parameter = command.CreateParameter();
+                parameter = command.CreateParameter();
+                parameter.ParameterName = "@userID";
+                parameter.Value = userID;
+                command.Parameters.Add(parameter);
+                IDataReader reader = command.ExecuteReader();
+
+                using (reader)
+                {
+                    while (reader.Read())
+                    {
+                        resultSet.Add(new Playlist
+                        {
+                            ID = (int)reader["Playlist_ID"],
+                            Name = (string)reader["Playlist_Name"],
+                            userID = (int)reader["User_ID"]
+                        });
+                    }
+                }
+            }
+
+            finally
+            {
+                connection.Close();
+            }
+
+            return resultSet;
+        }
+
+        public List<Playlist> GetAllByUser(int userID)
+        {
+            List<Playlist> resultSet = new List<Playlist>();
+            IDbConnection connection = new SqlConnection(connectionString);
+
+            try
+            {
+                connection.Open();
+                IDbCommand command = connection.CreateCommand();
+                command.CommandText = "SELECT * FROM playlistsTable WHERE userID = @userID";
+                IDataParameter parameter = command.CreateParameter();
+                parameter = command.CreateParameter();
+                parameter.ParameterName = "@userID";
+                parameter.Value = userID;
+                command.Parameters.Add(parameter);
+                IDataReader reader = command.ExecuteReader();
+
+                using (reader)
+                {
+                    while (reader.Read())
+                    {
+                        resultSet.Add(new Playlist
+                        {
+                            ID = (int)reader["ID"],
+                            Name = (string)reader["Name"],
+                            isPublic = (bool)reader["isPublic"],
+                            userID = (int)reader["userID"]
+                        });
+                    }
+                }
+            }
+
+            finally
+            {
+                connection.Close();
+            }
+
+            return resultSet;
+        }
+
+        public Tuple<Playlist, string> GetByID(int ID)
+        {
+            Playlist playlist = new Playlist();
+            IDbConnection connection = new SqlConnection(connectionString);
+            string userName = string.Empty;
+
+            try
+            {
+                connection.Open();
+                IDbCommand command = connection.CreateCommand();
+                command.CommandText = "SELECT plt.Name AS Playlist_Name, plt.ID AS Playlist_ID, ut.Name AS User_Name FROM playlistsTable AS plt INNER JOIN usersTable AS ut ON plt.userID = ut.ID WHERE plt.ID = @ID";
 
                 IDataParameter parameter = command.CreateParameter();
                 parameter = command.CreateParameter();
@@ -75,12 +159,10 @@ namespace BlackSoundDAL.Repositories
                 {
                     while (reader.Read())
                     {
-
-                        playlist.ID = (int)reader["ID"];
-                        playlist.Name = (string)reader["Name"];
-                        playlist.isPublic = (bool)reader["isPublic"];
-                        playlist.userID = (int)reader["userID"];
-                    }
+                        playlist.Name = (string)reader["Playlist_Name"];
+                        playlist.ID = (int)reader["Playlist_ID"];
+                        userName = (string)reader["User_Name"];
+                    }                    
                 }
             }
 
@@ -89,11 +171,52 @@ namespace BlackSoundDAL.Repositories
                 connection.Close();
             }
 
-            return playlist;
+            return Tuple.Create<Playlist, string>(playlist, userName);
+        }
+
+        public bool UserOwnsPlaylist(int playlistID)
+        {
+            int userID = 0;
+            IDbConnection connection = new SqlConnection(connectionString);
+
+            try
+            {
+                connection.Open();
+                IDbCommand command = connection.CreateCommand();
+                command.CommandText = "SELECT userID FROM playlistsTable WHERE ID = @ID";
+
+                IDataParameter parameter = command.CreateParameter();
+                parameter = command.CreateParameter();
+                parameter.ParameterName = "@ID";
+                parameter.Value = playlistID;
+                command.Parameters.Add(parameter);
+
+                IDataReader reader = command.ExecuteReader();
+                using (reader)
+                {
+                    while (reader.Read())
+                    {
+                        userID = (int)reader["userID"];
+                    }
+                }
+
+                if (userID == AuthenticationService.LoggedUser.ID)
+                {
+                    return true;
+                }
+                else return false;
+            }
+
+            finally
+            {
+                connection.Close();
+            }
         }
 
         public bool CheckIfExists(int playlistID, int songID)
         {
+            //check
+            //check
             IDbConnection connection = new SqlConnection(connectionString);
             int rowsAffected = 0;
 
@@ -101,20 +224,27 @@ namespace BlackSoundDAL.Repositories
             {
                 connection.Open();                
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM playlist_song WHERE playlistID = @playlistID AND songID = @songID";
+                command.CommandText = "SELECT COUNT(playlistID) FROM playlist_song WHERE playlistID = @playlistID AND songID = @songID";
 
                 IDataParameter parameter = command.CreateParameter();
                 parameter = command.CreateParameter();
-                parameter.ParameterName = "@PlaylistID";
+                parameter.ParameterName = "@playlistID";
                 parameter.Value = playlistID;
                 command.Parameters.Add(parameter);
 
                 parameter = command.CreateParameter();
-                parameter.ParameterName = "@SongID";
+                parameter.ParameterName = "@songID";
                 parameter.Value = songID;
                 command.Parameters.Add(parameter);
-                IDataReader reader = command.ExecuteReader();
-                rowsAffected = reader.FieldCount;
+
+                if((Int32)command.ExecuteScalar() > 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
             finally
             {
@@ -123,7 +253,7 @@ namespace BlackSoundDAL.Repositories
 
             if (rowsAffected > 0)
             {
-                return true;
+               
             }
             else return false;
             
@@ -212,13 +342,13 @@ namespace BlackSoundDAL.Repositories
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                
+
                 command.CommandText = @"SELECT
                  plt.Name AS Playlist_Name, st.ID AS Song_Id, st.Name AS Song_Name, st.ArtistName AS Song_ArtistName, st.YearCreated AS Song_YearCreated
                  FROM playlist_song AS pls
                  INNER JOIN songsTable AS st ON pls.songID = st.ID
                  INNER JOIN playlistsTable AS plt ON pls.playlistID = plt.ID
-                 WHERE pls.playlistID = @PlaylistID";
+                 WHERE pls.playlistID = @PlaylistID";                
 
                 IDataParameter parameter = command.CreateParameter();
                 parameter = command.CreateParameter();
@@ -348,6 +478,37 @@ namespace BlackSoundDAL.Repositories
             finally
             {
                 connection.Close();
+            }
+        }
+
+        public void Share(int userToShareWithID, int playlistID)
+        {
+            if(UserOwnsPlaylist(playlistID))
+            {
+                IDbConnection connection = new SqlConnection(connectionString);
+                IDbCommand command = connection.CreateCommand();
+                command.CommandText = "INSERT INTO user_playlist (playlistID, userID) VALUES (@PlaylistID, @UserID)";
+
+                IDataParameter parameter = command.CreateParameter();
+                parameter = command.CreateParameter();
+                parameter.ParameterName = "@PlaylistID";
+                parameter.Value = playlistID;
+                command.Parameters.Add(parameter);
+
+                parameter = command.CreateParameter();
+                parameter.ParameterName = "@UserID";
+                parameter.Value = userToShareWithID;
+                command.Parameters.Add(parameter);
+
+                try
+                {
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+                finally
+                {
+                    connection.Close();
+                }
             }
         }
     }

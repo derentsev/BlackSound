@@ -6,6 +6,13 @@ using System.Threading.Tasks;
 
 namespace BlackSound
 {
+    public enum MenuOperation
+    {
+        User = 1,
+        Song = 2,
+        Playlist = 3
+    }
+
     class DisplayMainMenu
     {
         public void DisplayMenu()
@@ -13,29 +20,29 @@ namespace BlackSound
             DisplayUser dispUser = new DisplayUser();
             DisplaySong dispSong = new DisplaySong();
             DisplayPlaylist dispPlaylist = new DisplayPlaylist();
-            int caseSwitch = 0;
+            int operationInt = 0;
 
-            while (caseSwitch != 4)
+            while (operationInt != 4)
             {
-            Console.WriteLine("Press 1 for user options");
-            Console.WriteLine("Press 2 for song options");
-            Console.WriteLine("Press 3 for playist options");
-            Console.WriteLine("Press any other key to exit" + Environment.NewLine);
-            caseSwitch = Convert.ToInt32(Console.ReadLine());
+                Console.WriteLine("...................................");
+                Console.WriteLine("Press 1 for user options");
+                Console.WriteLine("Press 2 for song options");
+                Console.WriteLine("Press 3 for playist options");
+                Console.WriteLine("Press any other key to exit" + Environment.NewLine);
 
-            
-                switch (caseSwitch)
+                operationInt = Convert.ToInt32(Console.ReadLine());
+                MenuOperation operation = (MenuOperation)operationInt;
+
+                switch (operation)
                 {
-                    case 1:
+                    case MenuOperation.User:
                         dispUser.PrintUserMenu();
                         break;
-                    case 2:
+                    case MenuOperation.Song:
                         dispSong.PrintSongMenu();
                         break;
-                    case 3:
+                    case MenuOperation.Playlist:
                         dispPlaylist.PrintPlaylistMenu();
-                        break;
-                    case 4:
                         break;
                     default:
                         break;

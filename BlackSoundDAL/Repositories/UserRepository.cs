@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Data;
 using BlackSoundDAL.Entities;
+using BlackSoundDAL.Services;
 
 namespace BlackSoundDAL
 {
@@ -223,40 +224,50 @@ namespace BlackSoundDAL
             }
             
             return logged;
-        }
+        }       
 
-        //Checks if the user trying to Log in is admin
-        public bool CheckIfUserAdmin(string name, string password)
+        public User GetUserByNameAndPass(string name, string password)
         {
+            User userResult = new User();
             IDbConnection connection = new SqlConnection(connectionString);
-            bool isAdmin = false;
 
             try
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT isAdmin FROM usersTable WHERE Name = @Name AND Password = @Password";
+                command.CommandText = "SELECT * FROM usersTable WHERE Name = @Name AND Password = @Password";
 
                 IDataParameter parameter = command.CreateParameter();
                 parameter = command.CreateParameter();
-                parameter.ParameterName = "@Name";
+                parameter.ParameterName = "Name";
                 parameter.Value = name;
                 command.Parameters.Add(parameter);
 
                 parameter = command.CreateParameter();
-                parameter.ParameterName = "@Password";
+                parameter.ParameterName = "Password";
                 parameter.Value = password;
                 command.Parameters.Add(parameter);
                 IDataReader reader = command.ExecuteReader();
-                isAdmin = (bool)reader["isAdmin"];
 
+                using (reader)
+                {
+                    while (reader.Read())
+                    {
+
+                        userResult.ID = (int)reader["ID"];
+                        userResult.Name = (string)reader["Name"];
+                        userResult.Email = (string)reader["Email"];
+                        userResult.IsAdmin = (bool)reader["isAdmin"];
+                    }
+                }
             }
+
             finally
             {
                 connection.Close();
             }
 
-            return isAdmin;
+            return userResult;
         }
 
         public bool CheckIfUserExists(string name, string password)
@@ -268,7 +279,7 @@ namespace BlackSoundDAL
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM usersTable WHERE Name = @Name AND Password = @Password";
+                command.CommandText = "SELECT COUNT(ID) FROM usersTable WHERE Name = @Name AND Password = @Password";
 
                 IDataParameter parameter = command.CreateParameter();
                 parameter = command.CreateParameter();
@@ -280,8 +291,7 @@ namespace BlackSoundDAL
                 parameter.ParameterName = "@Password";
                 parameter.Value = password;
                 command.Parameters.Add(parameter);
-                IDataReader reader = command.ExecuteReader();
-                rowsAffected = reader.FieldCount;
+                rowsAffected = (Int32)command.ExecuteScalar();
             }
             finally
             {

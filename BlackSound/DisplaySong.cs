@@ -5,10 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using BlackSoundDAL.Entities;
 using BlackSoundDAL.Repositories;
+using BlackSoundDAL.Services;
 
 namespace BlackSound
 {
-    public class DisplaySong
+    public enum SongOperation
+    {
+        Add = 1,
+        Delete = 2,
+        DisplayByID = 3,
+        GetAll = 4,
+        Update = 5
+    }
+
+    public class DisplaySong 
     {
         private static readonly string conString = "Server=.\\SQLEXPRESS; Database=BlackSound; Integrated Security = True";
         SongRepository songRepo = new SongRepository(conString);
@@ -27,6 +37,38 @@ namespace BlackSound
             songRepo.Insert(songInfo);
         }
 
+        public void DeleteSong()
+        {
+            Console.WriteLine("...................................");
+            Console.WriteLine("Deleting song..");
+            Console.WriteLine("Song`s ID to be deleted: ");
+            songRepo.Delete(Convert.ToInt32(Console.ReadLine()));
+            Console.WriteLine("The song has been deleted! ");
+        }
+
+        public void DisplaySongByID()
+        {
+            Console.WriteLine("..................................."); ;
+            Console.Write("Insert song`s ID: ");
+            int songID = Convert.ToInt32(Console.ReadLine());
+            songInfo = songRepo.GetByID(songID);
+            Console.WriteLine("ID: " + songInfo.ID + "    " + songInfo.ArtistName + "  -  " + songInfo.Name);
+            Console.WriteLine("...................................");
+        }
+
+        public void GetAllSongs()
+        {
+            List<Song> allSongs = songRepo.GetAll();
+
+            foreach (var item in allSongs)
+            {
+                Console.WriteLine("...........................................................................................");
+                Console.WriteLine("Song ID: " + item.ID + " Song's name: " + item.Name + "   Song's year: " + item.Year);
+                Console.WriteLine("...........................................................................................");
+            }
+
+        }
+
         public void UpdateSong()
         {
             Console.WriteLine("...................................");
@@ -41,74 +83,76 @@ namespace BlackSound
             songInfo.ArtistName = Console.ReadLine();
             songRepo.Update(songInfo);
         }
-         
-        public void GetAllSongs()
-        {
-            List<Song> allSongs = songRepo.GetAll();
-
-            foreach (var item in allSongs)
-            {
-                Console.WriteLine("...........................................................................................");
-                Console.WriteLine("Song ID: " + item.ID + " Song's name: " + item.Name + "   Song's year: " + item.Year);
-                Console.WriteLine("...........................................................................................");
-            }
-
-        }
-
-        public void DisplaySongByID()
-        {
-            Console.WriteLine("..................................."); ;
-            Console.Write("Insert song`s ID: ");
-            int songID = Convert.ToInt32(Console.ReadLine());
-            songInfo = songRepo.GetByID(songID);
-            Console.WriteLine("ID: " + songInfo.ID + "    " + songInfo.ArtistName + "  -  " + songInfo.Name);
-            Console.WriteLine("...................................");
-        }
-
-        public void DeleteSong()
-        {
-            Console.WriteLine("...................................");
-            Console.WriteLine("Deleting song..");
-            Console.WriteLine("Song`s ID to be deleted: ");
-            songRepo.Delete(Convert.ToInt32(Console.ReadLine()));
-            Console.WriteLine("The song has been deleted! ");
-        }
 
         public void PrintSongMenu()
         {
-            Console.WriteLine(".............SONG MENU.............");
-            Console.WriteLine("Press 1 to add new song");
-            Console.WriteLine("Press 2 to update song");
-            Console.WriteLine("Press 3 to get all songs");
-            Console.WriteLine("Press 4 to get song by ID");
-            Console.WriteLine("Press 5 to delete a song");
-            Console.WriteLine("Press any other key to exit");
-            Console.WriteLine("...................................");
+            int caseMainMenu = -1;
 
-            int caseSwitch = Convert.ToInt32(Console.ReadLine());
-
-            switch (caseSwitch)
+            while (caseMainMenu != 0)
             {
-                case 1:
-                    AddSong();
-                    break;
-                case 2:
-                    UpdateSong();
-                    break;
-                case 3:
-                    GetAllSongs();
-                    break;
-                case 4:
-                    DisplaySongByID();
-                    break;
-                case 5:
-                    DeleteSong();
-                    break;
+                if (AuthenticationService.LoggedUser.IsAdmin == true)
+                {
+                    Console.WriteLine(".............SONG MENU FOR ADMIN.............");
+                    Console.WriteLine("1 - Add new song");
+                    Console.WriteLine("2 - Update song");
+                    Console.WriteLine("3 - Get all song");
+                    Console.WriteLine("4 - Get song by ID");
+                    Console.WriteLine("5 - Delete song");
+                    Console.WriteLine("Press any other key to exit");
+                    Console.WriteLine(".............................................");
 
-                default: 
-                    break;
+                    int operationInt = Convert.ToInt32(Console.ReadLine());
+                    SongOperation operation = (SongOperation)operationInt;
+
+                    switch (operation)
+                    {
+                        case SongOperation.Add:
+                            AddSong();
+                            break;
+                        case SongOperation.Update:
+                            UpdateSong();
+                            break;
+                        case SongOperation.GetAll:
+                            GetAllSongs();
+                            break;
+                        case SongOperation.DisplayByID:
+                            DisplaySongByID();
+                            break;
+                        case SongOperation.Delete:
+                            DeleteSong();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine(".............SONG MENU FOR USER.............");
+                    Console.WriteLine("1 - Get all songs");
+                    Console.WriteLine("2 - Get song by ID");
+                    Console.WriteLine("Press any other key to exit");
+                    Console.WriteLine("............................................");
+
+                    int operationInt = Convert.ToInt32(Console.ReadLine());
+                    SongOperation operation = (SongOperation)operationInt;
+
+                    switch (operation)
+                    {
+                        case SongOperation.GetAll:
+                            GetAllSongs();
+                            break;
+                        case SongOperation.DisplayByID:
+                            DisplaySongByID();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                Console.WriteLine("0 - Go back to main menu");
+                Console.WriteLine("1 - Stay in song menu");
+                caseMainMenu = Convert.ToInt32(Console.ReadLine());
             }
-
         }
     }
 }

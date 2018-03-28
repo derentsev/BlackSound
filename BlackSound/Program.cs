@@ -17,15 +17,12 @@ namespace BlackSound
         static void Main(string[] args)
         {
             UserRepository user = new UserRepository(conString);
-            SongRepository song = new SongRepository(conString);
-            PlaylistRepository playlist = new PlaylistRepository(conString);
-            DisplayMainMenu menu = new DisplayMainMenu();
             DisplayUser dispUser = new DisplayUser();
+            SongRepository song = new SongRepository(conString);
             DisplaySong dispSong = new DisplaySong();
+            PlaylistRepository playlist = new PlaylistRepository(conString);
             DisplayPlaylist dispPlaylist = new DisplayPlaylist();
-
-            bool isAdmin = false;
-
+            DisplayMainMenu menu = new DisplayMainMenu();
 
             dispUser.UserLogin();
             menu.DisplayMenu();            
