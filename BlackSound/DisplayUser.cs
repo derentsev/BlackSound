@@ -23,7 +23,7 @@ namespace BlackSound
     {
         private static readonly string conString = "Server=.\\SQLEXPRESS; Database=BlackSound; Integrated Security = True";
         User userInfo = new User();
-        UserRepository user = new UserRepository(conString);
+        DynamicRepository<User> dynRepo = new DynamicRepository<User>(conString);
 
         public void AddUser()
         {
@@ -38,25 +38,25 @@ namespace BlackSound
             userInfo.IsAdmin = Convert.ToBoolean(Console.ReadLine());
             Console.WriteLine(Environment.NewLine);
             bool userExists = user.CheckIfUserExists(userInfo.Name, userInfo.Password);
-
+            
             if (userExists == true)
             {
                 Console.WriteLine(Environment.NewLine + "Name or password already used. User not added." + Environment.NewLine);
                 return;
             }
-            else user.Insert(userInfo);            
+            else dynRepo.Insert(userInfo);
         }
 
         public void DeleteUser()
         {
             Console.WriteLine("Deleting user..");
             Console.WriteLine("User`s ID to be deleted: ");
-            user.Delete(Convert.ToInt32(Console.ReadLine()));
+            dynRepo.DeleteByID(Convert.ToInt32(Console.ReadLine()));
         }
 
         public void DisplayAllUsers()
         {
-            List<User> allUsers = user.GetAll();
+            List<User> allUsers = dynRepo.GetAll();
             Console.WriteLine("...........................................................");
 
             foreach (var item in allUsers)
@@ -69,10 +69,7 @@ namespace BlackSound
         {
             Console.WriteLine("...................................");
             Console.Write("Insert user`s ID: ");
-            int userID = Convert.ToInt32(Console.ReadLine());
-
-            userInfo = user.GetByID(userID);
-
+            userInfo = dynRepo.GetByID(Convert.ToInt32(Console.ReadLine()));
             Console.WriteLine("...........................................................");
             Console.WriteLine("Users ID: " + userInfo.ID + "|   User`s Name: " + userInfo.Name + "|   User`s Email: " + userInfo.Email + Environment.NewLine);
         }
@@ -90,7 +87,7 @@ namespace BlackSound
             userInfo.Password = Console.ReadLine();
             Console.Write("Is admin? true/false: ");
             userInfo.IsAdmin = Convert.ToBoolean(Console.ReadLine());
-            user.Update(userInfo);
+            dynRepo.Update(userInfo);
         }
 
         public void PrintUserMenu()
@@ -104,10 +101,10 @@ namespace BlackSound
                 {
                     Console.WriteLine(".............ADMIN MENU.............");
                     Console.WriteLine("1 - Add new user");
-                    Console.WriteLine("2 - Update  user");
-                    Console.WriteLine("3 - Get all users");
-                    Console.WriteLine("4 - Get user by ID");
-                    Console.WriteLine("5 - Delete a user");
+                    Console.WriteLine("2 - Delete  user");
+                    Console.WriteLine("3 - Get user by ID");
+                    Console.WriteLine("4 - Get all users");
+                    Console.WriteLine("5 - Update user");
                     Console.WriteLine("Press any other key to exit");
                     Console.WriteLine("...................................");
 

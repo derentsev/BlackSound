@@ -16,6 +16,7 @@ namespace BlackSound
            
         static void Main(string[] args)
         {
+            //CreateDatabase.CreateDB();
             UserRepository user = new UserRepository(conString);
             DisplayUser dispUser = new DisplayUser();
             SongRepository song = new SongRepository(conString);

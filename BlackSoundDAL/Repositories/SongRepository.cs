@@ -27,7 +27,7 @@ namespace BlackSoundDAL.Repositories
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM songsTable";
+                command.CommandText = "SELECT * FROM Songs";
 
                 IDataReader reader = command.ExecuteReader();
                 using (reader)
@@ -58,12 +58,12 @@ namespace BlackSoundDAL.Repositories
         {
             Song songResult = new Song();
             IDbConnection connection = new SqlConnection(connectionString);
-
+             
             try
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM songsTable WHERE ID = @ID";
+                command.CommandText = "SELECT * FROM Songs WHERE ID = @ID";
 
                 IDataParameter parameter = command.CreateParameter();
                 parameter = command.CreateParameter();
@@ -98,7 +98,7 @@ namespace BlackSoundDAL.Repositories
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO songsTable (Name, ArtistName, YearCreated) VALUES (@Name, @ArtistName, @YearCreated)";
+            command.CommandText = "INSERT INTO Songs (Name, ArtistName, YearCreated) VALUES (@Name, @ArtistName, @YearCreated)";
 
             IDataParameter parameter = command.CreateParameter();
             parameter = command.CreateParameter();
@@ -132,7 +132,7 @@ namespace BlackSoundDAL.Repositories
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "UPDATE songsTable SET Name = @Name, ArtistName = @ArtistName, YearCreated = @YearCreated WHERE ID = @ID";
+            command.CommandText = "UPDATE Songs SET Name = @Name, ArtistName = @ArtistName, YearCreated = @YearCreated WHERE ID = @ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter = command.CreateParameter();
@@ -171,7 +171,7 @@ namespace BlackSoundDAL.Repositories
         {
             IDbConnection connection = new SqlConnection(connectionString);
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "DELETE FROM songsTable WHERE ID=@ID";
+            command.CommandText = "DELETE FROM Songs WHERE ID=@ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter.ParameterName = "@ID";

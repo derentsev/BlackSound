@@ -21,7 +21,8 @@ namespace BlackSound
     public class DisplaySong 
     {
         private static readonly string conString = "Server=.\\SQLEXPRESS; Database=BlackSound; Integrated Security = True";
-        SongRepository songRepo = new SongRepository(conString);
+        //SongRepository songRepo = new SongRepository(conString);
+        DynamicRepository<Song> dynRepo = new DynamicRepository<Song>(conString);
         Song songInfo = new Song();
 
         public void AddSong()
@@ -34,7 +35,7 @@ namespace BlackSound
             songInfo.Year = Convert.ToInt32(Console.ReadLine());
             Console.Write("Artist: ");
             songInfo.ArtistName = Console.ReadLine();
-            songRepo.Insert(songInfo);
+            dynRepo.Insert(songInfo);
         }
 
         public void DeleteSong()
@@ -42,7 +43,7 @@ namespace BlackSound
             Console.WriteLine("...................................");
             Console.WriteLine("Deleting song..");
             Console.WriteLine("Song`s ID to be deleted: ");
-            songRepo.Delete(Convert.ToInt32(Console.ReadLine()));
+            dynRepo.DeleteByID(Convert.ToInt32(Console.ReadLine()));
             Console.WriteLine("The song has been deleted! ");
         }
 
@@ -51,14 +52,14 @@ namespace BlackSound
             Console.WriteLine("..................................."); ;
             Console.Write("Insert song`s ID: ");
             int songID = Convert.ToInt32(Console.ReadLine());
-            songInfo = songRepo.GetByID(songID);
+            songInfo = dynRepo.GetByID(songID); 
             Console.WriteLine("ID: " + songInfo.ID + "    " + songInfo.ArtistName + "  -  " + songInfo.Name);
             Console.WriteLine("...................................");
         }
 
         public void GetAllSongs()
         {
-            List<Song> allSongs = songRepo.GetAll();
+            List<Song> allSongs = dynRepo.GetAll(); 
 
             foreach (var item in allSongs)
             {
@@ -66,7 +67,6 @@ namespace BlackSound
                 Console.WriteLine("Song ID: " + item.ID + " Song's name: " + item.Name + "   Song's year: " + item.Year);
                 Console.WriteLine("...........................................................................................");
             }
-
         }
 
         public void UpdateSong()
@@ -81,7 +81,7 @@ namespace BlackSound
             songInfo.Year = Convert.ToInt32(Console.ReadLine());
             Console.Write("New artist: ");
             songInfo.ArtistName = Console.ReadLine();
-            songRepo.Update(songInfo);
+            dynRepo.Update(songInfo);
         }
 
         public void PrintSongMenu()

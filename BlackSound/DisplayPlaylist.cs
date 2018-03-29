@@ -34,6 +34,7 @@ namespace BlackSound
         UserRepository user = new UserRepository(conString);
         DisplayUser dispUser = new DisplayUser();
         List<Playlist> playlists = new List<Playlist>();
+        DynamicRepository<Playlist> dynRepo = new DynamicRepository<Playlist>(conString);
 
         public void AddPlaylist()
         {
@@ -43,7 +44,7 @@ namespace BlackSound
             playlistInfo.userID = AuthenticationService.LoggedUser.ID;
             Console.Write("Playlist is public (true/false): ");
             playlistInfo.isPublic = Convert.ToBoolean(Console.ReadLine());
-            playlistRepo.Insert(playlistInfo);
+            dynRepo.Insert(playlistInfo);
         }
 
         public void UpdatePlaylist()
@@ -59,7 +60,7 @@ namespace BlackSound
                 playlistInfo.userID = AuthenticationService.LoggedUser.ID;
                 Console.Write("Playlist is public (true/false): ");
                 playlistInfo.isPublic = Convert.ToBoolean(Console.ReadLine());
-                playlistRepo.Update(playlistInfo);
+                dynRepo.Update(playlistInfo);
             }
             else
             {
@@ -126,11 +127,10 @@ namespace BlackSound
 
         public void GetPlaylistsByUser()
         {
-            List<Playlist> allPlaylists = playlistRepo.GetAllByUser(AuthenticationService.LoggedUser.ID);
-            allPlaylists.AddRange(playlistRepo.GetSharedPlaylists(AuthenticationService.LoggedUser.ID));
-            DisplayUser dispUser = new DisplayUser();
+            playlists = playlistRepo.GetAllByUser(AuthenticationService.LoggedUser.ID);
+            playlists.AddRange(playlistRepo.GetSharedPlaylists(AuthenticationService.LoggedUser.ID));
 
-            foreach (var item in allPlaylists)
+            foreach (var item in playlists)
             {
                 if (item.userID == AuthenticationService.LoggedUser.ID)
                 {
@@ -139,16 +139,13 @@ namespace BlackSound
                     }
                 }
             }
-
-
         }
 
         public void GetAllPlaylists()
         {
-            List<Playlist> allPlaylists = playlistRepo.GetAll();
-            DisplayUser dispUser = new DisplayUser();
+            playlists = dynRepo.GetAll();
 
-            foreach (var item in allPlaylists)
+            foreach (var item in playlists)
             {
                 if (playlistInfo.isPublic || playlistInfo.userID == AuthenticationService.LoggedUser.ID || AuthenticationService.LoggedUser.IsAdmin)
                 {
@@ -182,7 +179,7 @@ namespace BlackSound
         {
             Console.WriteLine("Deleting playlist..");
             Console.WriteLine("Playlist`s ID to be deleted: " + Environment.NewLine);
-            playlistRepo.Delete(Convert.ToInt32(Console.ReadLine()));
+            dynRepo.DeleteByID(Convert.ToInt32(Console.ReadLine()));
         }
 
         public void DisplayPlaylistByID()
@@ -215,20 +212,18 @@ namespace BlackSound
 
         public void GetAllSharedPlaylistsWithMe()
         {
-            List<Playlist> sharedPlaylists = playlistRepo.GetSharedPlaylists(AuthenticationService.LoggedUser.ID);
-            DisplayUser dispUser = new DisplayUser();
-            UserRepository userRepo = new UserRepository(conString);
+            playlists = playlistRepo.GetSharedPlaylists(AuthenticationService.LoggedUser.ID);
 
             Console.WriteLine("Users have shared those playlists with you.....");
             Console.WriteLine("*************************************");
 
-            foreach (var item in sharedPlaylists)
+            foreach (var item in playlists)
             {
                 if (item.userID == AuthenticationService.LoggedUser.ID)
                 {
                     Console.WriteLine("Playlist ID:" + item.ID + Environment.NewLine
                         + "Playlist's name: " + item.Name + Environment.NewLine
-                        + "Creator: " + userRepo.GetByID((int)item.userID).Name + Environment.NewLine);
+                        + "Creator: " + user.GetByID((int)item.userID).Name + Environment.NewLine);
                 }
 
                 Console.WriteLine("*************************************");

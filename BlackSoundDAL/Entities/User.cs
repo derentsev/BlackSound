@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace BlackSoundDAL.Entities
 {
-    public class User
+    public class User : BaseEntity
     {
-        public int ID { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
         public string Name { get; set; }

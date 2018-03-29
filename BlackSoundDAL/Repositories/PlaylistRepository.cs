@@ -10,7 +10,7 @@ using BlackSoundDAL.Services;
 
 namespace BlackSoundDAL.Repositories
 {
-    public class PlaylistRepository
+    public class PlaylistRepository 
     {
         private readonly string connectionString;
 
@@ -28,7 +28,7 @@ namespace BlackSoundDAL.Repositories
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM playlistsTable WHERE isPublic = 'TRUE'";
+                command.CommandText = "SELECT * FROM Playlists WHERE isPublic = 'TRUE'";
                 IDataReader reader = command.ExecuteReader();
 
                 using (reader)
@@ -63,9 +63,9 @@ namespace BlackSoundDAL.Repositories
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = @"SELECT DISTINCT playlistsTable.Name AS Playlist_Name, playlistsTable.userID AS User_ID, user_playlist.playlistID AS Playlist_ID FROM user_playlist 
-                                        INNER JOIN playlistsTable  ON user_playlist.playlistID = playlistID WHERE user_playlist.userID = @userID 
-                                        AND playlistsTable.ID = playlistID";
+                command.CommandText = @"SELECT DISTINCT Playlists.Name AS Playlist_Name, Playlists.userID AS User_ID, user_playlist.playlistID AS Playlist_ID FROM user_playlist 
+                                        INNER JOIN Playlists  ON user_playlist.playlistID = playlistID WHERE user_playlist.userID = @userID 
+                                        AND Playlists.ID = playlistID";
 
                 IDataParameter parameter = command.CreateParameter();
                 parameter = command.CreateParameter();
@@ -105,7 +105,7 @@ namespace BlackSoundDAL.Repositories
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT * FROM playlistsTable WHERE userID = @userID";
+                command.CommandText = "SELECT * FROM Playlists WHERE userID = @userID";
                 IDataParameter parameter = command.CreateParameter();
                 parameter = command.CreateParameter();
                 parameter.ParameterName = "@userID";
@@ -146,7 +146,7 @@ namespace BlackSoundDAL.Repositories
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT plt.Name AS Playlist_Name, plt.ID AS Playlist_ID, ut.Name AS User_Name FROM playlistsTable AS plt INNER JOIN usersTable AS ut ON plt.userID = ut.ID WHERE plt.ID = @ID";
+                command.CommandText = "SELECT plt.Name AS Playlist_Name, plt.ID AS Playlist_ID, ut.Name AS User_Name FROM Playlists AS plt INNER JOIN Users AS ut ON plt.userID = ut.ID WHERE plt.ID = @ID";
 
                 IDataParameter parameter = command.CreateParameter();
                 parameter = command.CreateParameter();
@@ -183,7 +183,7 @@ namespace BlackSoundDAL.Repositories
             {
                 connection.Open();
                 IDbCommand command = connection.CreateCommand();
-                command.CommandText = "SELECT userID FROM playlistsTable WHERE ID = @ID";
+                command.CommandText = "SELECT userID FROM Playlists WHERE ID = @ID";
 
                 IDataParameter parameter = command.CreateParameter();
                 parameter = command.CreateParameter();
@@ -346,8 +346,8 @@ namespace BlackSoundDAL.Repositories
                 command.CommandText = @"SELECT
                  plt.Name AS Playlist_Name, st.ID AS Song_Id, st.Name AS Song_Name, st.ArtistName AS Song_ArtistName, st.YearCreated AS Song_YearCreated
                  FROM playlist_song AS pls
-                 INNER JOIN songsTable AS st ON pls.songID = st.ID
-                 INNER JOIN playlistsTable AS plt ON pls.playlistID = plt.ID
+                 INNER JOIN Songs AS st ON pls.songID = st.ID
+                 INNER JOIN Playlists AS plt ON pls.playlistID = plt.ID
                  WHERE pls.playlistID = @PlaylistID";                
 
                 IDataParameter parameter = command.CreateParameter();
@@ -387,7 +387,7 @@ namespace BlackSoundDAL.Repositories
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "INSERT INTO playlistsTable (Name, isPublic, userID) VALUES (@Name, @isPublic, @userID)";
+            command.CommandText = "INSERT INTO Playlists (Name, isPublic, userID) VALUES (@Name, @isPublic, @userID)";
 
             IDataParameter parameter = command.CreateParameter();
             parameter = command.CreateParameter();
@@ -422,7 +422,7 @@ namespace BlackSoundDAL.Repositories
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "UPDATE playlistsTable SET Name = @Name, isPublic = @isPublic, userID = @userID WHERE ID = @ID";
+            command.CommandText = "UPDATE Playlists SET Name = @Name, isPublic = @isPublic, userID = @userID WHERE ID = @ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter = command.CreateParameter();
@@ -462,7 +462,7 @@ namespace BlackSoundDAL.Repositories
             IDbConnection connection = new SqlConnection(connectionString);
 
             IDbCommand command = connection.CreateCommand();
-            command.CommandText = "DELETE FROM playlistsTable WHERE ID=@ID";
+            command.CommandText = "DELETE FROM Playlists WHERE ID=@ID";
 
             IDataParameter parameter = command.CreateParameter();
             parameter.ParameterName = "@ID";
